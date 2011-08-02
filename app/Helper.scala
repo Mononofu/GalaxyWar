@@ -216,11 +216,17 @@ import scala.actors.Futures._
   def getStarsystemID(mapX: Double, mapY: Double) = {
     val x = mapX * 256 / 246 * 6e18
     val y = mapY * 256 / 246 * 6e18
-    val 
-    transaction {
-      from(Game.starsystems)(s => where(s.x_pos > ))
+    println("%f:%f".format(x, y))
+    val fudge = 5e15
+    val candidates = transaction {
+      (from(Game.starsystems)(s => where((s.pos_x.~ > x - fudge) and (s.pos_x.~ < x + fudge) and (s.pos_y.~ > y - fudge) and (s.pos_y.~ < y + fudge)) select(s))).toList
     }
-
+    println("candidates")
+    println(candidates)
+    if (candidates.length > 0)
+      candidates.head.id
+    else
+      0l
   }
 
   def search() = {

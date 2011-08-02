@@ -7,7 +7,8 @@
     <li><a href="starsystem?id=1">display starsystem</a></li>
 </ul>
 
-<div id="map" style="width: 800px; height: 800px" onclick="clickHandler(); return true"></div>
+<div id="map" style="width: 1000px; height: 800px" onclick="clickHandler(); return true"></div>
+<iframe id="starinfo" src="match-starsystem?mapX=0.0&mapY=0.0" style="width: 800px; height:800px"></iframe>
 <form name="log" action="#"><textarea rows="20" cols="30"></textarea></form>
 <script type="text/javascript" src="public/javascripts/polymaps.js"></script>
 <script type="text/javascript">
@@ -22,19 +23,21 @@
             .add(po.compass().pan("none"));
 
     function clickHandler(e) {
-        document.forms["log"].elements[0].value = ""
+        //document.forms["log"].elements[0].value = ""
         if (!e) var e = window.event;
         var location = map.mouse(e)
-        document.forms["log"].elements[0].value += location.x + ':' + location.y +'\n'
+        //document.forms["log"].elements[0].value += location.x + ':' + location.y +'\n'
         var pointLocation =  map.pointLocation(location)
-        document.forms["log"].elements[0].value += pointLocation.lon.toFixed(2) + ':' + pointLocation.lat.toFixed(2) +'\n'
+        //document.forms["log"].elements[0].value += pointLocation.lon.toFixed(2) + ':' + pointLocation.lat.toFixed(2) +'\n'
         var tileCoordinate = map.locationCoordinate(pointLocation)
         var zoom = tileCoordinate.zoom
         var column = tileCoordinate.column
         var row = tileCoordinate.row
-        document.forms["log"].elements[0].value += zoom + '-' + column.toFixed(2) + ':' + row.toFixed(2) + '\n'
-        document.forms["log"].elements[0].value += ((column / Math.pow(2, zoom) - 0.5)).toFixed(4) + ':' + ((row / Math.pow(2, zoom)-0.5)).toFixed(4) + '\n'
-
+        var x = column / Math.pow(2, zoom) - 0.5
+        var y = row / Math.pow(2, zoom) - 0.5
+        //document.forms["log"].elements[0].value += zoom + '-' + column.toFixed(2) + ':' + row.toFixed(2) + '\n'
+        //document.forms["log"].elements[0].value += x.toFixed(4) + ':' + y.toFixed(4) + '\n'
+        document.getElementById("starinfo").src= "match-starsystem?mapX=" + x + "&mapY=" + y
         
     }
 </script>

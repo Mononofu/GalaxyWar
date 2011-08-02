@@ -1,0 +1,42 @@
+@(title:String)
+
+@main(title) {
+
+<ul>
+    <li><a href="generate-map">generate a new galaxy</a></li>
+    <li><a href="starsystem?id=1">display starsystem</a></li>
+</ul>
+
+<div id="map" style="width: 800px; height: 800px" onclick="clickHandler(); return true"></div>
+<form name="log" action="#"><textarea rows="20" cols="30"></textarea></form>
+<script type="text/javascript" src="public/javascripts/polymaps.js"></script>
+<script type="text/javascript">
+    var po = org.polymaps;
+
+    var map = po.map()
+            .container(document.getElementById("map").appendChild(po.svg("svg")))
+            .zoomRange([2, 6])
+            .zoom(2)
+            .add(po.image().url("public/images/galaxy-map/z{Z}-x{X}-y{Y}.png"))
+            .add(po.interact())
+            .add(po.compass().pan("none"));
+
+    function clickHandler(e) {
+        document.forms["log"].elements[0].value = ""
+        if (!e) var e = window.event;
+        var location = map.mouse(e)
+        document.forms["log"].elements[0].value += location.x + ':' + location.y +'\n'
+        var pointLocation =  map.pointLocation(location)
+        document.forms["log"].elements[0].value += pointLocation.lon.toFixed(2) + ':' + pointLocation.lat.toFixed(2) +'\n'
+        var tileCoordinate = map.locationCoordinate(pointLocation)
+        var zoom = tileCoordinate.zoom
+        var column = tileCoordinate.column
+        var row = tileCoordinate.row
+        document.forms["log"].elements[0].value += zoom + '-' + column.toFixed(2) + ':' + row.toFixed(2) + '\n'
+        document.forms["log"].elements[0].value += ((column / Math.pow(2, zoom) - 0.5)).toFixed(4) + ':' + ((row / Math.pow(2, zoom)-0.5)).toFixed(4) + '\n'
+
+        
+    }
+</script>
+
+}

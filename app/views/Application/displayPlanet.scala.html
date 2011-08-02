@@ -1,0 +1,97 @@
+@(orbitRadius: Option[Double],
+planetType: RichPlanet.PlanetType.PlanetType,
+size: Option[RichPlanet.Size.Size] = None,
+radius: Option[Int] = None,
+rings: Option[Int] = None,
+moonlets: Option[Int] = None,
+climateType: Option[RichPlanet.ClimateType.ClimateType] = None,
+blackbodyT: Option[Int] = None,
+surfaceT: Option[Double] = None,
+gravity: Option[Double] = None,
+pressure: Option[Double] = None,
+marginalAtmos: Option[RichPlanet.MarginalAtmosphere.MarginalAtmosphere] = None,
+toxic: Option[RichPlanet.Toxic.Toxic] = None,
+corrosive: Option[Boolean] = None,
+suffocating: Option[Boolean] = None,
+orbitalPeriod: Option[Double] = None,
+dayLength: Option[Double] = None,
+carryingCap: Option[Double] = None,
+resVal: Option[Int] = None,
+hydCoverage: Option[Double] = None,
+volc: Option[RichPlanet.VolcanicActivity.VolcanicActivity] = None,
+seis: Option[RichPlanet.VolcanicActivity.VolcanicActivity] = None)
+
+@import RichPlanet.ClimateType._
+
+<td style="text-align: right;">@{if(orbitRadius.isEmpty) "moon" else {"%,.3fAU".format(orbitRadius.get)}}</td>
+<td style="text-align: center;">@planetType</td>
+<td style="text-align: center;">@{ if(!size.isEmpty) size}</td>
+<td style="text-align: right;">@{ if(!radius.isEmpty) "%dkm".format(radius.get)}</td>
+<td>@{ if(!rings.isEmpty) rings}</td>
+<td>@{ if(!moonlets.isEmpty) moonlets}</td>
+<td style='text-align: center; color:@{ if(!pressure.isEmpty && pressure.get > 0.001 && !climateType.isEmpty) climateType.get match {
+    case Frozen => "blue"
+    case VeryCold => "#09F"
+    case Cold => "#0CF"
+    case Chilly => "#0FF"
+    case Cool => "#0F9"
+    case Normal => "green"
+    case Warm => "#6F6"
+    case Tropical => "#9C0"
+    case Hot => "#DD0"
+    case VeryHot => "#F60"
+    case Infernal => "red"
+}}'>@{ if(!pressure.isEmpty && pressure.get > 0.001 && !climateType.isEmpty) climateType}</td>
+<td style="text-align: right;">@{ if(!blackbodyT.isEmpty) blackbodyT}</td>
+<td style="text-align: right;">@{if(!pressure.isEmpty && pressure.get > 0.001 && !surfaceT.isEmpty) "%,.2fC".format(surfaceT.get)}</td>
+<td style="text-align: right;">@{if(!gravity.isEmpty) "%,.3fg".format(gravity.get)}</td>
+<td style="text-align: right;">@{if(!pressure.isEmpty && pressure.get > 0.001) "%,.2fatm".format(pressure.get)}</td>
+<td>@{if(!pressure.isEmpty && pressure.get > 0.001 && !marginalAtmos.isEmpty && marginalAtmos.get != RichPlanet.MarginalAtmosphere.NotMarginal) marginalAtmos}</td>
+<td style='background-color: @{if(!pressure.isEmpty && pressure.get > 0.001 && !toxic.isEmpty) toxic.get match {
+    case RichPlanet.Toxic.NotToxic => "green"
+    case RichPlanet.Toxic.MildlyToxic => "yellow"
+    case RichPlanet.Toxic.HighlyToxic => "orange"
+    case RichPlanet.Toxic.LethallyToxic => "red"
+}}'></td>
+<td style='background-color: @{if(!pressure.isEmpty && pressure.get > 0.001 && !corrosive.isEmpty) corrosive.get match {
+    case true => "red"
+    case false => "green"
+}}'></td>
+<td style='background-color: @{if(!pressure.isEmpty && pressure.get > 0.001 && !suffocating.isEmpty) suffocating.get match {
+    case true => "red"
+    case false => "green"
+}}'></td>
+<td style="text-align: right;">@{if(!orbitalPeriod.isEmpty) "%,.2f".format(orbitalPeriod.get)}y</td>
+<td style="text-align: right;">
+    @{ if(!dayLength.isEmpty ) {
+
+    if(dayLength.get.abs > 4000) {
+        "%,.2fy".format(dayLength.get / 24. / 365.)
+    } else if(dayLength.get.abs > 500) {
+        "%,.2fm".format(dayLength.get / 24. / 30.)
+    } else if(dayLength.get.abs > 100) {
+        "%,.2fw".format(dayLength.get / 24. / 7.)
+    } else {
+       "%,.2fh".format(dayLength.get)
+    }
+    }}
+</td>
+<td style="text-align: right;">@{ if(!carryingCap.isEmpty) "%,.2fM".format(carryingCap.get / 1e6)}</td>
+<td>@{ if(!resVal.isEmpty) resVal}</td>
+<td>@{ if(!hydCoverage.isEmpty && hydCoverage.get > 0.001) hydCoverage}</td>
+<td style='background-color: @{if(!volc.isEmpty) volc.get match {
+    case RichPlanet.VolcanicActivity.NoActivity => "green"
+    case RichPlanet.VolcanicActivity.LightActivity => "LawnGreen"
+    case RichPlanet.VolcanicActivity.ModerateActivity => "yellow"
+    case RichPlanet.VolcanicActivity.HeavyActivity => "orange"
+    case RichPlanet.VolcanicActivity.ExtremeActivity => "red"
+}}'></td>
+<td style='background-color: @{if(!seis.isEmpty) seis.get match {
+    case RichPlanet.VolcanicActivity.NoActivity => "green"
+    case RichPlanet.VolcanicActivity.LightActivity => "LawnGreen"
+    case RichPlanet.VolcanicActivity.ModerateActivity => "yellow"
+    case RichPlanet.VolcanicActivity.HeavyActivity => "orange"
+    case RichPlanet.VolcanicActivity.ExtremeActivity => "red"
+}}'></td>
+
+        

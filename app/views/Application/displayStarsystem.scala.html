@@ -1,0 +1,72 @@
+@(starsystem:models.StarSystem, stars:List[models.Star], planetsWithMoons:List[(models.Planet, List[models.Planet])])
+
+@import RichPlanet.PlanetType._
+
+@main("Starsystem %d".format(starsystem.id)) {
+
+        <a href='@action(controllers.MainRouter.displayStarsystem(starsystem.id - 1))'>prev</a>
+        <a href='@action(controllers.MainRouter.displayStarsystem(starsystem.id + 1))'>next</a>
+        <a href='@action(controllers.MainRouter.displayStarsystem(util.Random.nextInt(110000)))'>random</a>
+        <a href='../..'>home</a>
+
+        <p>Starsystem "@starsystem.fullname" at @starsystem.pos_x:@starsystem.pos_y:@starsystem.pos_z</p>
+
+        <ol>
+            @for(star <- stars) {
+                <li>@star.fullname: Mass @star.mass, age @{star.age / 1e9}GY, orbit radius @star.orbitRadius, ecc @star.orbitEccentricity</li>
+            }
+        </ol>
+        <p>Planets of main star</p>
+        <table>
+            <thead>
+            <tr class="odd">
+                <th>orbit r</th>
+                <th>type</th>
+                <th>size</th>
+                <th>radius</th>
+                <th>rings</th>
+                <th>moonlets</th>
+                <th>climate type</th>
+                <th>blackb T</th>
+                <th>temp</th>
+                <th>gravity</th>
+                <th>press</th>
+                <th></th>
+                <th>tox.</th>
+                <th>corr</th>
+                <th>suff</th>
+                <th>orbit P</th>
+                <th>day len</th>
+                <th>carrying cap</th>
+                <th>res Val</th>
+                <th>hyd cov</th>
+                <th>volc</th>
+                <th>seis</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for(((planet, moons), i) <- planetsWithMoons.zipWithIndex if planet.planetType != Empty) {
+                <tr class='@{if(i%2 == 0) "even" else "odd"}'>
+                    @{planet.planetType match {
+                        case GasGiant => {
+                            views.Application.html.displayPlanet(Some(planet.orbitRadius), planet.planetType, Some(planet.size), Some(planet.radius), Some(planet.rings), Some(planet.moonlets), gravity = Some(planet.gravity), orbitalPeriod = Some(planet.orbitalPeriod), dayLength = Some(planet.dayLength))
+                        }
+                        case AsteroidBelt => {
+                            views.Application.html.displayPlanet(Some(planet.orbitRadius), planet.planetType, orbitalPeriod = Some(planet.orbitalPeriod))
+                        }
+                        case _ => {
+                            views.Application.html.displayPlanet(Some(planet.orbitRadius), planet.planetType, Some(planet.size), Some(planet.radius), None, Some(planet.moonlets), Some(planet.climateType), Some(planet.blackbodyT), Some(planet.surfaceTemperatureCelsius), Some(planet.gravity), Some(planet.atmosphericPressure), Some(planet.marginalAtmosphere), Some(planet.toxic), Some(planet.corrosive), Some(planet.suffocating),Some(planet.orbitalPeriod), Some(planet.dayLength), Some(planet.carryingCapacity), Some(planet.resourceValue), Some(planet.hydrographicCoverage), Some(planet.volcanicActivity), Some(planet.tectonicActivity))
+                        }
+                    } }
+                </tr>
+                @for(moon <- moons) {
+                    <tr class='@{if(i%2 == 0) "even" else "odd"}'>
+                        @views.Application.html.displayPlanet(None, moon.planetType, Some(moon.size), Some(moon.radius), None, None, Some(moon.climateType), Some(moon.blackbodyT), Some(moon.surfaceTemperatureCelsius), Some(moon.gravity), Some(moon.atmosphericPressure), Some(moon.marginalAtmosphere), Some(moon.toxic), Some(moon.corrosive), Some(moon.suffocating),Some(moon.orbitalPeriod), Some(moon.dayLength), Some(moon.carryingCapacity), Some(moon.resourceValue), Some(moon.hydrographicCoverage), Some(moon.volcanicActivity), Some(moon.tectonicActivity))
+                    </tr>
+                }
+            }
+
+            </tbody>
+
+        </table>
+}

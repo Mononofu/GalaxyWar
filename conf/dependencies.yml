@@ -1,0 +1,13 @@
+# Application dependencies
+
+require:
+    - play
+    - play -> scala 0.9.1
+    - org.squeryl -> squeryl_2.8.1 0.9.4
+
+repositories:
+    - squeryl:
+        type: iBiblio
+        root: "http://nexus.scala-tools.org/content/repositories/releases/"
+        contains:
+            - org.squeryl -> *

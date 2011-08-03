@@ -7,6 +7,7 @@ GET     /                                       MainRouter.index
 GET     /starsystem                             MainRouter.displayStarsystem
 GET     /generate-map                           MainRouter.paintGalaxy
 GET     /match-starsystem                       MainRouter.matchStarsystem
+GET     /empty-starsystem                       MainRouter.emptyStarsystem
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

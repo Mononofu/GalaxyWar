@@ -4,6 +4,7 @@ require:
     - play
     - play -> scala 0.9.1
     - org.squeryl -> squeryl_2.8.1 0.9.4
+    - play -> secure
 
 repositories:
     - squeryl:

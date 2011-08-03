@@ -125,46 +125,6 @@ import scala.actors.Futures._
   }
 
 
-  def plotValues(vals: Traversable[(Int, Int)], filename: String,
-    width: Int = 800, height: Int = 800) {
-    val img = new image.BufferedImage(width, height,
-                                       image.BufferedImage.TYPE_INT_RGB)
-
-    val (xMax, yMax) = vals.foldLeft((0, 0))((x, y) => (x._1 max y._1, x._2 max
-                                                                       y._2))
-    val (xMin, yMin) = vals
-                       .foldLeft((100, 100))((x, y) => (x._1 min y._1, x._2 min
-                                                                       y._2))
-    println("%d : %d".format(xMax, yMax))
-    println("%d : %d".format(xMin, yMin))
-
-
-    for (v <- vals) {
-      val x = (1.0 * v._1 / xMax * width - 3 toInt).max(0) + 1
-      val y = (height - 2) - ((1.0 * v._2 / yMax * height - 2 toInt).max(0))
-      //println("%d : %d".format(x, y))
-      img.setRGB(x, y, 0xffffffff)
-      img.setRGB(x + 1, y, 0xffffffff)
-      img.setRGB(x, y + 1, 0xffffffff)
-      img.setRGB(x + 1, y + 1, 0xffffffff)
-    }
-
-    img.setRGB((20.0 / xMax * width - 3 toInt).max(0) + 1, 20, 0xffff00ff)
-    img.setRGB((20.0 / xMax * width - 3 toInt).max(0) + 1, 21, 0xffff00ff)
-    img.setRGB((20.0 / xMax * width - 3 toInt).max(0) + 2, 20, 0xffff00ff)
-    img.setRGB((20.0 / xMax * width - 3 toInt).max(0) + 2, 21, 0xffff00ff)
-
-    img.setRGB((40.0 / xMax * width - 3 toInt).max(0) + 1, 20, 0xffff00ff)
-    img.setRGB((40.0 / xMax * width - 3 toInt).max(0) + 1, 21, 0xffff00ff)
-    img.setRGB((40.0 / xMax * width - 3 toInt).max(0) + 2, 20, 0xffff00ff)
-    img.setRGB((40.0 / xMax * width - 3 toInt).max(0) + 2, 21, 0xffff00ff)
-
-    val file = new File("src/main/webapp/images/" + filename + ".png")
-    try ImageIO.write(img, "png", file) catch {
-      case e => println(e, "image saving failed")
-    }
-  }
-
   import org.squeryl._
   import PrimitiveTypeMode._
   import models.Game
@@ -221,8 +181,6 @@ import scala.actors.Futures._
     val candidates = transaction {
       (from(Game.starsystems)(s => where((s.pos_x.~ > x - fudge) and (s.pos_x.~ < x + fudge) and (s.pos_y.~ > y - fudge) and (s.pos_y.~ < y + fudge)) select(s))).toList
     }
-    println("candidates")
-    println(candidates)
     if (candidates.length > 0)
       candidates.head.id
     else

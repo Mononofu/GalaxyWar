@@ -31,17 +31,6 @@ object Generator {
     }
   }
 
-  def testGenerators() = {
-    val sampleSize = 20000
-    var map = new scala.collection.mutable.HashMap[Int, Int]() {
-      override def default(key: Int) = 0
-    }
-    for (i <- 0 to sampleSize) {
-      map((determineStarMass() * 20).toInt) += 1
-    }
-    plotValues(map.toList, "mass_test")
-  }
-
   def generateGalaxy() {
     //initDB()
 

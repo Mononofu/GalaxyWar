@@ -53,10 +53,43 @@ class QuadTree(stars: List[StarSystem], treeDepth: Int, minX: Long, maxX: Long, 
       case e => println(e, "image saving failed")
     }
     if(curZoom < maxZoom) {
-      quadrants.foreach( q => q match { case Some(quad) => quad.generatePNG(name, maxZoom, imgSize, curZoom + 1) case _ => })
+      quadrants.foreach( q => q match { case Some(quad) => WorkPool.execute { quad.generatePNG(name, maxZoom, imgSize, curZoom + 1) } case _ => })
     }
   }
 
+}
+
+object WorkPool {
+  import scala.actors.Futures._
+
+  val work = new scala.collection.mutable.SynchronizedQueue[() => Unit]()
+  val threads = new scala.collection.mutable.SynchronizedQueue[actors.Future[Unit]]()
+
+  val maxRunningThreads = 16
+
+
+  def execute(f: => Unit) {
+    work.enqueue( () => f  )
+    if(threads.length < maxRunningThreads)
+      runNext()
+  }
+
+  def runNext() {
+    if (work.length > 0) {
+      threads.enqueue( future{
+        if( work.length > 0) (work.dequeue())()
+        future { if (threads.length > 0) (threads.dequeue())() }
+        runNext()
+      })
+    }
+  }
+
+  def waitForAll() {
+    for(thread <- threads) {
+      thread()
+    }
+    threads.clear()
+  }
 }
 
 object Helper {
@@ -127,19 +160,15 @@ object Helper {
   }
 
   def generateMapTiles(starsystems: List[StarSystem]) {
-import scala.actors.Futures._
-
-    val painters = scala.collection.mutable.Queue[actors.Future[Unit]]()
-    val threadCount = 16
-
     // measure how long everything takes
     import timer.Timer
     val tmr = new Timer()
     tmr.start()
 
     val maxCoord = 3121951219512195584l
-    val stars = new QuadTree(starsystems, 6, -maxCoord, maxCoord, -maxCoord, maxCoord)
-    stars.generatePNG("galaxy-map/", 5)
+    val stars = new QuadTree(starsystems, 7, -maxCoord, maxCoord, -maxCoord, maxCoord)
+    stars.generatePNG("galaxy-map/", 6)
+    WorkPool.waitForAll()
 
     println("took %f s to paint all tiles".format(tmr.lap()))
   }

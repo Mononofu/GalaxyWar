@@ -7,22 +7,23 @@
     <li><a href="starsystem?id=1">display starsystem</a></li>
 </ul>
 
-<div id="map" style="width: 1000px; height: 800px" onclick="clickHandler(); return true"></div>
-<iframe id="starinfo" src="match-starsystem?mapX=0.0&mapY=0.0" style="width: 800px; height:800px"></iframe>
-<form name="log" action="#"><textarea rows="20" cols="30"></textarea></form>
+<div id="map" style="width: 800px; height: 800px" onclick="clickHandler(); return true"></div>
+<iframe id="starinfo" src="match-starsystem?mapX=0.0&mapY=0.0" style="width: 1100px; height:800px"></iframe>
+
 <script type="text/javascript" src="public/javascripts/polymaps.js"></script>
 <script type="text/javascript">
     var po = org.polymaps;
 
     var map = po.map()
             .container(document.getElementById("map").appendChild(po.svg("svg")))
-            .zoomRange([2, 7])
+            .zoomRange([0, 7])
             .zoom(2)
             .add(po.image().url("public/images/galaxy-map/z{Z}-x{X}-y{Y}.png"))
             .add(po.interact())
             .add(po.compass().pan("none"));
 
     function clickHandler(e) {
+        // place for debug out: <form name="log" action="#"><textarea rows="20" cols="30"></textarea></form>
         //document.forms["log"].elements[0].value = ""
         if (!e) var e = window.event;
         var location = map.mouse(e)

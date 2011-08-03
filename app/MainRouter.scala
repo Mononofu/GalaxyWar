@@ -13,7 +13,7 @@ trait PasswordGuard {
   def check {
     session("username") match {
       case None => Secure.login
-      case name => println("Logged as %s".format(name.get))
+      case name => //println("Logged as %s".format(name.get))
     }
   }
 }
@@ -27,12 +27,12 @@ object MainRouter extends Controller with PasswordGuard {
 
   def generateGalaxy = {
     Generator.generateGalaxy()
-    index
+    Redirect("/")
   }
 
   def paintGalaxy = {
     Helper.generateMapTiles(Helper.getStarsystems())
-    index
+    Redirect("/")
   }
 
   def emptyStarsystem = {

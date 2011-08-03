@@ -9,6 +9,56 @@ import Matrix.Matrix._
 import RichStar.StarType.toRichStar
 import org.squeryl.adapters.{MySQLAdapter, PostgreSqlAdapter}
 
+
+class QuadTree(stars: List[StarSystem], treeDepth: Int, minX: Long, maxX: Long, minY: Long, maxY: Long) {
+  require(minX < maxX)
+  require(minY < maxY)
+  val myStars: Option[List[StarSystem]] = if (treeDepth <= 0) Some(stars) else None
+  val quadrants: List[Option[QuadTree]] = if (treeDepth <= 0)  List(None, None, None, None) else {
+      val (upper, lower) = stars.partition(_.pos_x < (minX + maxX) / 2.0 )
+      val (upperLeft, upperRight) = upper.partition(_.pos_y < (minY + maxY) / 2.0)
+      val (lowerLeft, lowerRight) = lower.partition(_.pos_y < (minY + maxY) / 2.0)
+      List(
+            Some(new QuadTree(upperLeft, treeDepth - 1, minX, (minX + maxX) / 2.0 toLong, minY, (minY + maxY) / 2.0 toLong)),
+            Some(new QuadTree(upperRight, treeDepth - 1, minX, (minX + maxX) / 2.0 toLong, (minY + maxY) / 2.0 toLong, maxY)),
+            Some(new QuadTree(lowerLeft, treeDepth - 1, (minX + maxX) / 2.0 toLong, maxX, minY, (minY + maxY) / 2.0 toLong)),
+            Some(new QuadTree(lowerRight, treeDepth - 1, (minX + maxX) / 2.0 toLong, maxX, (minY + maxY) / 2.0 toLong, maxY))
+          )
+    }
+
+  def foreach[U](f: StarSystem => U) {
+    myStars match {
+      case Some(s) => s.foreach(f)
+      case None =>
+    }
+    quadrants.foreach( q => q match { case Some(quad) => quad.foreach(f) case _ => })
+  }
+
+  def generatePNG(name: String, maxZoom: Int = 3, imgSize: Int = 256, curZoom: Int = 0) {
+    val img = new image.BufferedImage(imgSize, imgSize, image.BufferedImage.TYPE_INT_RGB)
+    foreach(starsystem => {
+      val x = 1.0 * (starsystem.pos_x - minX) / (maxX - minX) * imgSize
+      val y = 1.0 * (starsystem.pos_y - minY) / (maxY - minY) * imgSize
+
+      if (!Helper.outOfBounds(x, 0, imgSize-1) && !Helper.outOfBounds(y, 0, imgSize-1))
+        img.setRGB(x.toInt, y.toInt, 0xffffdea1)
+    } )
+
+    val maxCoord = 3121951219512195584l
+    val x = (maxCoord + minX) * math.pow(2, (curZoom - 1).max(0)) / maxCoord + 0.01
+    val y = (maxCoord + minY) * math.pow(2, (curZoom - 1).max(0)) / maxCoord + 0.01
+    val file = new File("game/public/images/" + name + "z%d-x%d-y%d".format(curZoom, x.toInt, y.toInt) + ".png")
+
+    try ImageIO.write(img, "png", file) catch {
+      case e => println(e, "image saving failed")
+    }
+    if(curZoom < maxZoom) {
+      quadrants.foreach( q => q match { case Some(quad) => quad.generatePNG(name, maxZoom, imgSize, curZoom + 1) case _ => })
+    }
+  }
+
+}
+
 object Helper {
   val rnd = new scala.util.Random()
 
@@ -54,7 +104,6 @@ object Helper {
 
   def generatePNG(name: String, starsystems: List[StarSystem],
     transformation: Matrix = identity, imgSize: Int = 256) {
-    println("start of paintGalaxy")
     val width, height = imgSize
     val scaleFactor = (imgSize - 10) / 6e18
 
@@ -66,7 +115,7 @@ object Helper {
 
       val x = pos(0)
       val y = pos(1)
-      
+
       if (!outOfBounds(x, 0, imgSize-1) && !outOfBounds(y, 0, imgSize-1))
         img.setRGB(x.toInt, y.toInt, 0xffffdea1)
     }
@@ -88,7 +137,12 @@ import scala.actors.Futures._
     val tmr = new Timer()
     tmr.start()
 
-    // split into 4 quadrants for improved performance
+    val maxCoord = 3121951219512195584l
+    val stars = new QuadTree(starsystems, 6, -maxCoord, maxCoord, -maxCoord, maxCoord)
+    stars.generatePNG("galaxy-map/", 5)
+
+/*
+    // split into 4 quadrants forif (treeDepth <= 0) improved performance
     val (upper, lower) = starsystems.partition(_.pos_x < 0)
     val (upperLeft, upperRight) = upper.partition(_.pos_y < 0)
     val (lowerLeft, lowerRight) = lower.partition(_.pos_y < 0)
@@ -117,9 +171,10 @@ import scala.actors.Futures._
 
       }
     }
-    
+
     for(p <- painters)
       p()
+   */
 
     println("took %f s to paint all tiles".format(tmr.lap()))
   }
@@ -136,7 +191,7 @@ import scala.actors.Futures._
     val fstream = new java.io.FileWriter("game/public/images/" + filename + ".json")
     val out = new java.io.BufferedWriter(fstream)
     val scaleFactor = (imgSize - 10) / 5e18
-    
+
     out.write((for(starsystem <- starsystems) yield {
       val star = List(starsystem.pos_x.toDouble, starsystem.pos_y.toDouble, starsystem.pos_z.toDouble).map(_ * scaleFactor) ::: List(1.0)
       val pos = transformation * star
@@ -176,7 +231,6 @@ import scala.actors.Futures._
   def getStarsystemID(mapX: Double, mapY: Double) = {
     val x = mapX * 256 / 246 * 6e18
     val y = mapY * 256 / 246 * 6e18
-    println("%f:%f".format(x, y))
     val fudge = 5e15
     val candidates = transaction {
       (from(Game.starsystems)(s => where((s.pos_x.~ > x - fudge) and (s.pos_x.~ < x + fudge) and (s.pos_y.~ > y - fudge) and (s.pos_y.~ < y + fudge)) select(s))).toList

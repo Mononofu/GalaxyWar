@@ -141,41 +141,6 @@ import scala.actors.Futures._
     val stars = new QuadTree(starsystems, 6, -maxCoord, maxCoord, -maxCoord, maxCoord)
     stars.generatePNG("galaxy-map/", 5)
 
-/*
-    // split into 4 quadrants forif (treeDepth <= 0) improved performance
-    val (upper, lower) = starsystems.partition(_.pos_x < 0)
-    val (upperLeft, upperRight) = upper.partition(_.pos_y < 0)
-    val (lowerLeft, lowerRight) = lower.partition(_.pos_y < 0)
-    val quadrants = List(List(upperLeft, upperRight), List(lowerLeft, lowerRight))
-
-    // paint single image of all stars
-    painters += future{ generatePNG("galaxy-map/z0-x0-y0", starsystems, identity, 256) }
-
-
-    // now paint all the other tiles
-    val maxZoomLevel = 7
-    for (i <- 1 until maxZoomLevel) {
-      val zoom = math.pow(2, i).toInt
-      for (x <- 0 until zoom; y <- 0 until zoom) {
-        val filename = ("galaxy-map/" +
-                        "z%d-x%d-y%d").format(i, x, y)
-        val trans = identity.translate(128 * zoom - 256 * x , 128 * zoom - 256 * y).scale(zoom, zoom)
-        val point = List(64.0, -32.0, 10.0, 1.0)
-
-        if (painters.length > threadCount) {
-          (painters.dequeue())()
-        }
-
-        // determine which quadrant we are in
-        painters += future{ generatePNG(filename, quadrants(2*x/zoom)(2*y/zoom), trans, 256) }
-
-      }
-    }
-
-    for(p <- painters)
-      p()
-   */
-
     println("took %f s to paint all tiles".format(tmr.lap()))
   }
 
@@ -183,25 +148,6 @@ import scala.actors.Futures._
   import org.squeryl._
   import PrimitiveTypeMode._
   import models.Game
-
-  def generateJSON(filename: String, starsystems: List[StarSystem],
-    transformation: Matrix = identity, imgSize: Int = 256) {
-    println("start of generateJSON")
-
-    val fstream = new java.io.FileWriter("game/public/images/" + filename + ".json")
-    val out = new java.io.BufferedWriter(fstream)
-    val scaleFactor = (imgSize - 10) / 5e18
-
-    out.write((for(starsystem <- starsystems) yield {
-      val star = List(starsystem.pos_x.toDouble, starsystem.pos_y.toDouble, starsystem.pos_z.toDouble).map(_ * scaleFactor) ::: List(1.0)
-      val pos = transformation * star
-      if (!outOfBounds(pos(0), 0, imgSize-1) && !outOfBounds(pos(1), 0, imgSize-1))
-        Some("""{"type": "Feature", "geometry": { "type": "Point", "coordinates": [%f, %f] }, "properties": {} }""".format(pos(0), pos(1) ) )
-      else
-        None
-    }).flatten.mkString("""{"type": "FeatureCollection", "features": [""", ",", "]}"))
-    out.close()
-  }
 
   def getStarsystems() = {
     transaction{ (from(Game.starsystems)(s => select(s))).toList }
